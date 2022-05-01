@@ -1,0 +1,64 @@
+// Alandia
+// borrowers creates package with duration, loan amount, interest, [NFTs]
+glob int duration
+glob int borrow
+glob int interest
+glob int amountNFTs
+glob token NFT1
+glob int fundStart
+glob int balance
+
+glob address funder
+
+// create contract with NFTs, duration, interest, borrow amount
+@pay 1 of glob.NFT1 : creator -> escrow
+@gstate -> packaged
+Create borrow(int duration, int borrow, int interest, int amountNFTs, token NFT1) {
+    glob.duration = duration
+    glob.borrow = borrow
+    glob.interest = interest
+    glob.amountNFTs = amountNFTs
+    glob.NFT1 = NFT1
+}
+
+// lender accepts and provides algo
+@gstate packaged -> funded
+@pay (glob.borrow, ) $amt of ALGO : * -> escrow
+@round $r
+OptIn Fund() {
+    glob.fundStart = r // duration starts here
+    glob.balance = amt
+    glob.funder = caller
+}
+
+// escrow pays creator
+@pay glob.balance of ALGO : escrow -> creator
+payBorrower () {
+    glob.balance = 0
+}
+
+// borrower pays back within duration
+@round(glob.fundStart, glob.fundStart + glob.duration)
+@pay glob.borrow + (glob.borrow * glob.interest) $amt of ALGO : creator -> escrow
+@gstate funded -> repaid
+payback() {
+    glob.balance = amt
+}
+
+@gstate repaid -> end
+@close glob.NFT1 : escrow -> creator
+@close ALGO : escrow -> glob.funder
+end() {}
+
+@round(glob.fundStart + glob.duration,)
+@gstate funded -> end
+@close glob.NFT1 : escrow -> caller
+@close ALGO : escrow -> caller
+dep() {}
+
+// close loan
+@gstate packaged -> end
+@from creator
+@close glob.NFT1 : escrow -> creator
+@close ALGO : escrow -> creator
+Delete delete() {}
