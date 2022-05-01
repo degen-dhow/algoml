@@ -1,0 +1,897 @@
+#pragma version 4
+
+aclause_0:
+
+txn ApplicationID
+int 0
+==
+bz aclause_1
+
+//*******
+
+byte "gstate"
+byte "@created"
+app_global_put
+
+int 1
+return
+
+//--------------------------------
+
+aclause_1:
+
+global GroupSize
+int 2
+==
+bz aclause_2
+
+gtxn 0 TypeEnum
+int pay
+==
+bz aclause_2
+
+txn OnCompletion
+int NoOp
+==
+bz aclause_2
+
+txn NumAppArgs
+int 1
+==
+bz aclause_2
+
+txna ApplicationArgs 0
+byte "init_escrow"
+==
+bz aclause_2
+
+txn Sender
+global CreatorAddress
+==
+bz aclause_2
+
+byte "gstate"
+app_global_get
+byte "@created"
+==
+bz aclause_2
+
+gtxn 0 Amount
+int 100000
+==
+bz aclause_2
+
+gtxn 0 CloseRemainderTo
+global ZeroAddress
+==
+bz aclause_2
+
+//*******
+
+byte "gstate"
+byte "@escrowinited"
+app_global_put
+
+byte "escrow"
+gtxn 0 Receiver
+app_global_put
+
+int 1
+return
+
+//--------------------------------
+
+aclause_2:
+
+global GroupSize
+int 2
+==
+bz aclause_3
+
+gtxn 0 TypeEnum
+int axfer
+==
+bz aclause_3
+
+txn OnCompletion
+int NoOp
+==
+bz aclause_3
+
+txn NumAppArgs
+int 6
+==
+bz aclause_3
+
+txna ApplicationArgs 0
+byte "borrow"
+==
+bz aclause_3
+
+byte "gstate"
+app_global_get
+byte "@escrowinited"
+==
+bz aclause_3
+
+int 0
+byte "NFT1"
+app_global_get_ex
+swap
+pop
+bz aclause_3
+
+gtxn 0 AssetAmount
+int 1
+==
+bz aclause_3
+
+gtxn 0 XferAsset
+byte "NFT1"
+app_global_get
+==
+bz aclause_3
+
+gtxn 0 Sender
+global CreatorAddress
+==
+bz aclause_3
+
+gtxn 0 AssetReceiver
+byte "escrow"
+app_global_get
+==
+bz aclause_3
+
+gtxn 0 AssetCloseTo
+global ZeroAddress
+==
+bz aclause_3
+
+txn Sender
+global CreatorAddress
+==
+bz aclause_3
+
+//*******
+
+byte "gstate"
+byte "packaged"
+app_global_put
+
+byte "duration"
+txna ApplicationArgs 1
+btoi
+app_global_put
+
+byte "borrow"
+txna ApplicationArgs 2
+btoi
+app_global_put
+
+byte "interest"
+txna ApplicationArgs 3
+btoi
+app_global_put
+
+byte "amountNFTs"
+txna ApplicationArgs 4
+btoi
+app_global_put
+
+byte "NFT1"
+txna ApplicationArgs 5
+btoi
+app_global_put
+
+int 1
+return
+
+//--------------------------------
+
+aclause_3:
+
+global GroupSize
+int 2
+==
+bz aclause_4
+
+gtxn 0 TypeEnum
+int pay
+==
+bz aclause_4
+
+txn OnCompletion
+int OptIn
+==
+bz aclause_4
+
+txn NumAppArgs
+int 1
+==
+bz aclause_4
+
+txna ApplicationArgs 0
+byte "Fund"
+==
+bz aclause_4
+
+byte "gstate"
+app_global_get
+byte "packaged"
+==
+bz aclause_4
+
+int 0
+byte "borrow"
+app_global_get_ex
+swap
+pop
+bz aclause_4
+
+gtxn 0 Amount
+byte "borrow"
+app_global_get
+>=
+bz aclause_4
+
+gtxn 0 Sender
+byte "escrow"
+app_global_get
+!=
+bz aclause_4
+
+gtxn 0 Receiver
+byte "escrow"
+app_global_get
+==
+bz aclause_4
+
+gtxn 0 CloseRemainderTo
+global ZeroAddress
+==
+bz aclause_4
+
+//*******
+
+byte "gstate"
+byte "funded"
+app_global_put
+
+int 0
+byte "fundStart"
+app_global_get_ex
+swap
+pop
+!
+assert
+
+byte "fundStart"
+global Round
+app_global_put
+
+int 0
+byte "balance"
+app_global_get_ex
+swap
+pop
+!
+assert
+
+byte "balance"
+gtxn 0 Amount
+app_global_put
+
+int 0
+byte "funder"
+app_global_get_ex
+swap
+pop
+!
+assert
+
+byte "funder"
+txn Sender
+app_global_put
+
+int 1
+return
+
+//--------------------------------
+
+aclause_4:
+
+global GroupSize
+int 2
+==
+bz aclause_5
+
+gtxn 0 TypeEnum
+int pay
+==
+bz aclause_5
+
+txn OnCompletion
+int NoOp
+==
+bz aclause_5
+
+txn NumAppArgs
+int 1
+==
+bz aclause_5
+
+txna ApplicationArgs 0
+byte "payBorrower"
+==
+bz aclause_5
+
+byte "gstate"
+app_global_get
+substring 0 1
+byte "@"
+!=
+bz aclause_5
+
+int 0
+byte "balance"
+app_global_get_ex
+swap
+pop
+bz aclause_5
+
+gtxn 0 Amount
+byte "balance"
+app_global_get
+==
+bz aclause_5
+
+gtxn 0 Sender
+byte "escrow"
+app_global_get
+==
+bz aclause_5
+
+gtxn 0 Receiver
+global CreatorAddress
+==
+bz aclause_5
+
+gtxn 0 CloseRemainderTo
+global ZeroAddress
+==
+bz aclause_5
+
+//*******
+
+byte "balance"
+int 0
+app_global_put
+
+int 1
+return
+
+//--------------------------------
+
+aclause_5:
+
+global GroupSize
+int 2
+==
+bz aclause_6
+
+gtxn 0 TypeEnum
+int pay
+==
+bz aclause_6
+
+txn OnCompletion
+int NoOp
+==
+bz aclause_6
+
+txn NumAppArgs
+int 1
+==
+bz aclause_6
+
+txna ApplicationArgs 0
+byte "payback"
+==
+bz aclause_6
+
+int 0
+byte "fundStart"
+app_global_get_ex
+swap
+pop
+bz aclause_6
+
+int 0
+byte "duration"
+app_global_get_ex
+swap
+pop
+bz aclause_6
+
+global Round
+byte "fundStart"
+app_global_get
+>=
+global Round
+byte "fundStart"
+app_global_get
+byte "duration"
+app_global_get
++
+<=
+&&
+bz aclause_6
+
+int 0
+byte "borrow"
+app_global_get_ex
+swap
+pop
+bz aclause_6
+
+int 0
+byte "interest"
+app_global_get_ex
+swap
+pop
+bz aclause_6
+
+gtxn 0 Amount
+byte "borrow"
+app_global_get
+byte "borrow"
+app_global_get
+byte "interest"
+app_global_get
+*
++
+==
+bz aclause_6
+
+gtxn 0 Sender
+global CreatorAddress
+==
+bz aclause_6
+
+gtxn 0 Receiver
+byte "escrow"
+app_global_get
+==
+bz aclause_6
+
+gtxn 0 CloseRemainderTo
+global ZeroAddress
+==
+bz aclause_6
+
+byte "gstate"
+app_global_get
+byte "funded"
+==
+bz aclause_6
+
+//*******
+
+byte "gstate"
+byte "repaid"
+app_global_put
+
+byte "balance"
+gtxn 0 Amount
+app_global_put
+
+int 1
+return
+
+//--------------------------------
+
+aclause_6:
+
+global GroupSize
+int 3
+==
+bz aclause_7
+
+gtxn 0 TypeEnum
+int pay
+==
+bz aclause_7
+
+gtxn 1 TypeEnum
+int pay
+==
+bz aclause_7
+
+txn OnCompletion
+int NoOp
+==
+bz aclause_7
+
+txn NumAppArgs
+int 1
+==
+bz aclause_7
+
+txna ApplicationArgs 0
+byte "end"
+==
+bz aclause_7
+
+byte "gstate"
+app_global_get
+byte "repaid"
+==
+bz aclause_7
+
+int 0
+byte "NFT1"
+app_global_get_ex
+swap
+pop
+bz aclause_7
+
+gtxn 0 Amount
+int 0
+==
+bz aclause_7
+
+gtxn 0 Sender
+byte "escrow"
+app_global_get
+==
+bz aclause_7
+
+gtxn 0 CloseRemainderTo
+global CreatorAddress
+==
+bz aclause_7
+
+int 0
+byte "funder"
+app_global_get_ex
+swap
+pop
+bz aclause_7
+
+gtxn 1 Amount
+int 0
+==
+bz aclause_7
+
+gtxn 1 Sender
+byte "escrow"
+app_global_get
+==
+bz aclause_7
+
+gtxn 1 CloseRemainderTo
+byte "funder"
+app_global_get
+==
+bz aclause_7
+
+//*******
+
+byte "gstate"
+byte "end"
+app_global_put
+
+int 1
+return
+
+//--------------------------------
+
+aclause_7:
+
+global GroupSize
+int 3
+==
+bz aclause_8
+
+gtxn 0 TypeEnum
+int pay
+==
+bz aclause_8
+
+gtxn 1 TypeEnum
+int pay
+==
+bz aclause_8
+
+txn OnCompletion
+int NoOp
+==
+bz aclause_8
+
+txn NumAppArgs
+int 1
+==
+bz aclause_8
+
+txna ApplicationArgs 0
+byte "dep"
+==
+bz aclause_8
+
+int 0
+byte "fundStart"
+app_global_get_ex
+swap
+pop
+bz aclause_8
+
+int 0
+byte "duration"
+app_global_get_ex
+swap
+pop
+bz aclause_8
+
+global Round
+byte "fundStart"
+app_global_get
+byte "duration"
+app_global_get
++
+>=
+bz aclause_8
+
+byte "gstate"
+app_global_get
+byte "funded"
+==
+bz aclause_8
+
+int 0
+byte "NFT1"
+app_global_get_ex
+swap
+pop
+bz aclause_8
+
+gtxn 0 Amount
+int 0
+==
+bz aclause_8
+
+gtxn 0 Sender
+byte "escrow"
+app_global_get
+==
+bz aclause_8
+
+gtxn 0 CloseRemainderTo
+txn Sender
+==
+bz aclause_8
+
+gtxn 1 Amount
+int 0
+==
+bz aclause_8
+
+gtxn 1 Sender
+byte "escrow"
+app_global_get
+==
+bz aclause_8
+
+gtxn 1 CloseRemainderTo
+txn Sender
+==
+bz aclause_8
+
+//*******
+
+byte "gstate"
+byte "end"
+app_global_put
+
+int 1
+return
+
+//--------------------------------
+
+aclause_8:
+
+global GroupSize
+int 3
+==
+bz aclause_9
+
+gtxn 0 TypeEnum
+int pay
+==
+bz aclause_9
+
+gtxn 1 TypeEnum
+int pay
+==
+bz aclause_9
+
+txn OnCompletion
+int DeleteApplication
+==
+bz aclause_9
+
+txn NumAppArgs
+int 1
+==
+bz aclause_9
+
+txna ApplicationArgs 0
+byte "delete"
+==
+bz aclause_9
+
+byte "gstate"
+app_global_get
+byte "packaged"
+==
+bz aclause_9
+
+txn Sender
+global CreatorAddress
+==
+bz aclause_9
+
+int 0
+byte "NFT1"
+app_global_get_ex
+swap
+pop
+bz aclause_9
+
+gtxn 0 Amount
+int 0
+==
+bz aclause_9
+
+gtxn 0 Sender
+byte "escrow"
+app_global_get
+==
+bz aclause_9
+
+gtxn 0 CloseRemainderTo
+global CreatorAddress
+==
+bz aclause_9
+
+gtxn 1 Amount
+int 0
+==
+bz aclause_9
+
+gtxn 1 Sender
+byte "escrow"
+app_global_get
+==
+bz aclause_9
+
+gtxn 1 CloseRemainderTo
+global CreatorAddress
+==
+bz aclause_9
+
+//*******
+
+byte "gstate"
+byte "end"
+app_global_put
+
+int 1
+return
+
+//--------------------------------
+
+aclause_9:
+
+global GroupSize
+int 3
+==
+bz aclause_10
+
+gtxn 0 TypeEnum
+int pay
+==
+bz aclause_10
+
+gtxn 1 TypeEnum
+int axfer
+==
+bz aclause_10
+
+txn OnCompletion
+int NoOp
+==
+bz aclause_10
+
+txn NumAppArgs
+int 1
+==
+bz aclause_10
+
+txna ApplicationArgs 0
+byte "optin_token"
+==
+bz aclause_10
+
+int 0
+byte "gstate"
+app_global_get_ex
+swap
+pop
+bz aclause_10
+
+byte "gstate"
+app_global_get
+byte "@created"
+!=
+bz aclause_10
+
+gtxn 0 Amount
+int 100000
+==
+bz aclause_10
+
+gtxn 0 Sender
+byte "escrow"
+app_global_get
+!=
+bz aclause_10
+
+gtxn 0 Receiver
+byte "escrow"
+app_global_get
+==
+bz aclause_10
+
+gtxn 0 CloseRemainderTo
+global ZeroAddress
+==
+bz aclause_10
+
+gtxn 1 AssetAmount
+int 0
+==
+bz aclause_10
+
+gtxn 1 Sender
+byte "escrow"
+app_global_get
+==
+bz aclause_10
+
+gtxn 1 AssetReceiver
+byte "escrow"
+app_global_get
+==
+bz aclause_10
+
+gtxn 1 AssetCloseTo
+global ZeroAddress
+==
+bz aclause_10
+
+//*******
+
+int 1
+return
+
+//--------------------------------
+
+aclause_10:
+
+//*******
+
+err
+
+int 1
+return
